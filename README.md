@@ -1,5 +1,3 @@
-# Contre-Soiree
-
 # Contre-Soirée
 
 Bot Discord pour la gestion de games communautaires (LG / UHC).
