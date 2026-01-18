@@ -1,3 +1,4 @@
+import os
 from discord.ext import commands
 from utils.backup import backup_pseudos
 from datetime import datetime
@@ -143,16 +144,26 @@ class Games(commands.Cog):
 
     @commands.command(name="list")
     async def list_pseudos(self, ctx):
-        # Sécurité : bon channel
+        # Sécurité : uniquement dans #chat-host
         if ctx.channel.id != CHANNEL_HOST:
+            await ctx.send(
+                "❌ Cette commande est uniquement utilisable dans **#chat-host**.",
+                delete_after=5
+            )
             return
 
-        # Lecture du fichier pseudos
+        import os
+
+        # Chemin absolu vers pseudos.txt (important sur VPS)
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        PSEUDOS_FILE = os.path.join(BASE_DIR, "pseudos.txt")
+
+        # Lecture du fichier
         try:
-            with open("pseudos.txt", "r", encoding="utf-8") as f:
+            with open(PSEUDOS_FILE, "r", encoding="utf-8") as f:
                 pseudos = [line.strip() for line in f if line.strip()]
         except FileNotFoundError:
-            await ctx.send("❌ Fichier pseudos introuvable.")
+            await ctx.send("❌ Fichier `pseudos.txt` introuvable.")
             return
 
         if not pseudos:
@@ -161,12 +172,12 @@ class Games(commands.Cog):
 
         pseudos.sort(key=str.lower)
 
-        BLOCS_SIZE = 15
-        total_pages = (len(pseudos) + BLOCS_SIZE - 1) // BLOCS_SIZE
+        BLOCK_SIZE = 15
+        total_pages = (len(pseudos) + BLOCK_SIZE - 1) // BLOCK_SIZE
 
         for i in range(total_pages):
-            start = i * BLOCS_SIZE
-            end = start + BLOCS_SIZE
+            start = i * BLOCK_SIZE
+            end = start + BLOCK_SIZE
             bloc = pseudos[start:end]
 
             message = (
@@ -175,8 +186,6 @@ class Games(commands.Cog):
             )
 
             await ctx.send(message, delete_after=60)
-
-
 
     @commands.command() # Commande Copy
     async def copy(self, ctx):
