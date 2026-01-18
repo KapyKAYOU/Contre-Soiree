@@ -142,33 +142,40 @@ class Games(commands.Cog):
         await msg.delete(delay=3)
 
     @commands.command(name="list")
-    async def list_pseudos(self, ctx, prefix: str = None):
+    async def list_pseudos(self, ctx):
+        # Sécurité : bon channel
+        if ctx.channel.id != CHANNEL_HOST:
+            return
+
+        # Lecture du fichier pseudos
         try:
             with open("pseudos.txt", "r", encoding="utf-8") as f:
-                pseudos = [line.strip() for line in f if line.strip()]
+            pseudos = [line.strip() for line in f if line.strip()]
         except FileNotFoundError:
-            await ctx.send("❌ Aucun fichier de pseudos trouvé.")
+            await ctx.send("❌ Fichier pseudos introuvable.")
             return
 
-        # Filtrage si un préfixe est donné
-        if prefix:
-            prefix = prefix.lower()
-            pseudos = [p for p in pseudos if p.lower().startswith(prefix)]
+        if not pseudos:
+            await ctx.send("❌ Aucun pseudo enregistré.")
+            return
 
-            if not pseudos:
-                await ctx.send(f"❌ Aucun pseudo ne commence par `{prefix}`.")
-                return
+        pseudos.sort(key=str.lower)
 
-        # Sécurité anti-spam (au cas où)
-        if len(pseudos) > 50:
-            await ctx.send(
-                f"⚠️ Trop de pseudos ({len(pseudos)}). "
-                f"Utilise `!list <lettre>` pour filtrer."
+        BLOCS_SIZE = 15
+        total_pages = (len(pseudos) + BLOCS_SIZE - 1) // BLOCS_SIZE
+
+        for i in range(total_pages):
+            start = i * BLOCS_SIZE
+            end = start + BLOCS_SIZE
+            bloc = pseudos[start:end]
+
+            message = (
+                f"📋 **Liste des pseudos ({i+1}/{total_pages})**\n"
+                + "\n".join(f"• {p}" for p in bloc)
             )
-            return
 
-        message = "**📋 Liste des pseudos :**\n" + "\n".join(f"• {p}" for p in pseudos)
-        await ctx.send(message)
+            await ctx.send(message, delete_after=60)
+
 
     @commands.command() # Commande Copy
     async def copy(self, ctx):
