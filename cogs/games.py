@@ -141,49 +141,34 @@ class Games(commands.Cog):
 
         await msg.delete(delay=3)
 
-    @commands.command() # Commande List
-    async def list(self, ctx):
-        if not await check_host_channel(ctx):
-            return
-
-        if not await can_view(ctx):
-            return
-
+    @commands.command(name="list")
+    async def list_pseudos(self, ctx, prefix: str = None):
         try:
             with open("pseudos.txt", "r", encoding="utf-8") as f:
-                pseudos = f.read().splitlines()
+                pseudos = [line.strip() for line in f if line.strip()]
         except FileNotFoundError:
-            pseudos = []
-
-        if not pseudos:
-            msg = await ctx.send("📭 La liste est vide.")
-            await ctx.message.delete(delay=1)
-            await msg.delete(delay=5)
+            await ctx.send("❌ Aucun fichier de pseudos trouvé.")
             return
 
-        COL_SIZE = 15
-        columns = [
-            pseudos[i:i + COL_SIZE]
-            for i in range(0, len(pseudos), COL_SIZE)
-        ]
+        # Filtrage si un préfixe est donné
+        if prefix:
+            prefix = prefix.lower()
+            pseudos = [p for p in pseudos if p.lower().startswith(prefix)]
 
-        lines = []
-        max_rows = max(len(col) for col in columns)
+            if not pseudos:
+                await ctx.send(f"❌ Aucun pseudo ne commence par `{prefix}`.")
+                return
 
-        for row in range(max_rows):
-            line = []
-            for col_index, col in enumerate(columns):
-                index = col_index * COL_SIZE + row
-                if row < len(col):
-                    line.append(f"{index+1:>2}. {col[row]:<16}")
-                lines.append(" ".join(line))
+        # Sécurité anti-spam (au cas où)
+        if len(pseudos) > 50:
+            await ctx.send(
+                f"⚠️ Trop de pseudos ({len(pseudos)}). "
+                f"Utilise `!list <lettre>` pour filtrer."
+            )
+            return
 
-        content = "```📋 Liste des pseudos\n\n" + "\n".join(lines) + "```"
-
-
-        msg = await ctx.send(content)
-        await ctx.message.delete(delay=1)
-        await msg.delete(delay=30)
+        message = "**📋 Liste des pseudos :**\n" + "\n".join(f"• {p}" for p in pseudos)
+        await ctx.send(message)
 
     @commands.command() # Commande Copy
     async def copy(self, ctx):
