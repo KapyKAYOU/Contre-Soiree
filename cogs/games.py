@@ -150,7 +150,7 @@ class Games(commands.Cog):
         # Lecture du fichier pseudos
         try:
             with open("pseudos.txt", "r", encoding="utf-8") as f:
-            pseudos = [line.strip() for line in f if line.strip()]
+                pseudos = [line.strip() for line in f if line.strip()]
         except FileNotFoundError:
             await ctx.send("❌ Fichier pseudos introuvable.")
             return
@@ -175,6 +175,7 @@ class Games(commands.Cog):
             )
 
             await ctx.send(message, delete_after=60)
+
 
 
     @commands.command() # Commande Copy
