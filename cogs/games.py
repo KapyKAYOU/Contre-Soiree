@@ -258,7 +258,7 @@ class Games(commands.Cog):
 
         await msg.delete(delay=6)
 
-    @commands.command()
+    @commands.command() # Commande start
     async def startgame(self, ctx):
 
         # Salon obligatoire : annonce-host
