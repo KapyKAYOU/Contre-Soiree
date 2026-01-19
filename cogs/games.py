@@ -2,6 +2,7 @@ import os
 from discord.ext import commands
 from utils.backup import backup_pseudos
 from datetime import datetime
+from utils.config import CHANNEL_HOST
 from utils.permission import (
     check_whitelist_channel,
     check_host_channel,
@@ -208,7 +209,7 @@ class Games(commands.Cog):
             return
 
         PREFIX = "/wl add "
-        MAX_LEN = 230
+        MAX_LEN = 100
 
         messages = []
         current = PREFIX
